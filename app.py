@@ -35,23 +35,57 @@ external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
 # Create the layout
-app.layout = html.Div(
-    # children =
-    [html.H1('College Football'), #Dashboard title
-     html.P(['Choose a Team.', #Dropdown instructions
-            dcc.Dropdown(id='First_Dropdown', options=teamNamesDict, multi=True, value=['Tennessee'] ) ] #Team selection dropdown
-            , style={'width':'400px'}),
-     dcc.Graph( id = 'First_Graph'), #TV attendance scatterplot
-     dcc.RadioItems( #Home, away, both selection button
-            id='home-away',
-            options=[{'label': i, 'value': i} for i in ['Home', 'Away', 'Both']],
-            value='Home',
-            labelStyle={'display': 'inline-block'}
-        ) #closes RadioItem
+app.layout = html.Div([ #contains everything on page, necessary for styling like page background etc.
+    
+    # page header section
+    html.Div([
+        html.H1('College Football'), #Dashboard title
+    ]), 
+    
+    #TV Viewers per team per year graph section
+    html.Div([
+        html.P([
+                'Choose a Team:', #Dropdown instructions 
+                #Team selection dropdown
+                dcc.Dropdown(
+                    id = 'First_Dropdown', 
+                    options = teamNamesDict, 
+                    multi = True, 
+                    value = ['Tennessee'], 
+                    style = { 'width':'400px', 'float':'right', 'display':'inline-block' } 
+                ), 
+                dcc.RadioItems( #Home, away, both selection button
+                    id = 'home-away',
+                    options = [ { 'label':i, 'value':i } for i in ['Home', 'Away', 'Both'] ],
+                    value = 'Home',
+                    labelStyle = { 'display':'inline-block', 'marginTop':25 }
+                ), #closes RadioItem
+            ] #closes list of items in html.P
+            , style = { 'width':'600px', 'MarginTop':10, 'MarginLeft':5 }
+        ), #closes html.P
+        
+        html.P([
+            dcc.Graph(id = 'First_Graph') #TV attendance scatterplot
+        ]),
+        
+        html.P([
+                dcc.Slider(
+                    id = 'Year_Selection_Slider',
+                    min = ratings_df.Date.min().year,
+                    max = ratings_df.Date.max().year,
+                    value = ratings_df.Date.max().year,
+                    marks = { str(year): str(year) for year in ratings_df.Date.dt.year.unique() },
+                    step = None
+                ),           
+            ],
+            style = { 'width':'49%', 'marginTop':10, 'marignLeft':10}
+        )
      
-    ] # Closes out the children of outermost html.Div of app.layout
-) # closes app.layout outermost html.Div 
+    ]) #closes TV Viewers per team per year graph section
+    
+]) # closes app.layout and the Section containing everything
 
+#=============================================================================
 # Create the callbacks here
 
 @app.callback(
@@ -94,8 +128,3 @@ def update_figure(teamX, Radio_Selection):
 if __name__ == "__main__":
     app.run_server(debug=True)
     
-
-    
-# can you pull branch
-# yes I can
-# i really can
