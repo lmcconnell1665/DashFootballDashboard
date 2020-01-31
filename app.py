@@ -70,11 +70,11 @@ app.layout = html.Div([ #contains everything on page, necessary for styling like
         ]),
         
         html.P([
-                dcc.Slider(
+                dcc.RangeSlider(
                     id = 'Year_Selection_Slider',
                     min = ratings_df.Date.min().year,
                     max = ratings_df.Date.max().year,
-                    value = ratings_df.Date.max().year,
+                    value = [ratings_df.Date.min().year, ratings_df.Date.max().year],
                     marks = { str(year): str(year) for year in ratings_df.Date.dt.year.unique() },
                     step = None
                 ),           
@@ -90,25 +90,38 @@ app.layout = html.Div([ #contains everything on page, necessary for styling like
 # Create the callbacks here
 
 @app.callback(
-    Output(component_id='First_Graph', component_property='figure'),
-    [Input(component_id='First_Dropdown', component_property='value'),
-    Input(component_id='home-away', component_property='value')]
+    Output(component_id = 'First_Graph', component_property = 'figure'),
+    [Input(component_id = 'First_Dropdown', component_property = 'value'),
+    Input(component_id = 'home-away', component_property = 'value'),
+    Input(component_id = 'Year_Selection_Slider', component_property = 'value')]
 )
 
-def update_figure(teamX, Radio_Selection):
+def update_figure(teamX, Radio_Selection, Year_Selection):
 
     data = []
     for team in teamX:
         col = team_colors['Color'][team]
         if Radio_Selection == 'Home':
-            Date = ratings_df[(ratings_df["Home Team"] == team)]['Date']
-            Viewers = ratings_df[(ratings_df["Home Team"] == team)]['VIEWERS']
+            Date = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
+                              (ratings_df['Date'].dt.year <= Year_Selection[1]) & 
+                              (ratings_df['Home Team'] == team)]['Date']
+            Viewers = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
+                                 (ratings_df['Date'].dt.year <= Year_Selection[1]) & 
+                                 (ratings_df['Home Team'] == team)]['VIEWERS']
         elif Radio_Selection == 'Away':
-            Date = ratings_df[(ratings_df["Visitor Team"] == team)]['Date']
-            Viewers = ratings_df[(ratings_df["Visitor Team"] == team)]['VIEWERS']
+            Date = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
+                              (ratings_df['Date'].dt.year <= Year_Selection[1]) &
+                              (ratings_df['Visitor Team'] == team)]['Date']
+            Viewers = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
+                                 (ratings_df['Date'].dt.year <= Year_Selection[1]) &
+                                 (ratings_df['Visitor Team'] == team)]['VIEWERS']
         elif Radio_Selection == 'Both':
-            Date = ratings_df[(ratings_df["Home Team"] == team) | (ratings_df["Visitor Team"] == team)]["Date"]
-            Viewers = ratings_df[(ratings_df["Home Team"] == team) | (ratings_df["Visitor Team"] == team)]["VIEWERS"]         
+            Date = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) &
+                              (ratings_df['Date'].dt.year <= Year_Selection[1]) &
+                              ((ratings_df["Home Team"] == team) | (ratings_df["Visitor Team"] == team))]["Date"]
+            Viewers = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
+                                 (ratings_df['Date'].dt.year <= Year_Selection[1]) &
+                                 ((ratings_df["Home Team"] == team) | (ratings_df["Visitor Team"] == team))]["VIEWERS"]         
             
         data.append( dict(
                     type = "scatter",
