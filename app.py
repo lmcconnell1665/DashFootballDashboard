@@ -7,8 +7,9 @@ import numpy as np
 import datetime
 
 # reading in data.frame
-ratings_df = pd.read_csv("TV_Ratings_onesheet.csv")
-
+ratings_df = pd.read_csv("TV_Joined.csv")
+team_colors = pd.read_csv("team_colors.csv")
+team_colors = team_colors.set_index('Team').to_dict()
 # Makes the date column a column of dates
 ratings_df.Date = pd.to_datetime(ratings_df.Date)
 
@@ -64,6 +65,7 @@ def update_figure(teamX, Radio_Selection):
 
     data = []
     for team in teamX:
+        col = team_colors['Color'][team]
         if Radio_Selection == 'Home':
             Date = ratings_df[(ratings_df["Home Team"] == team)]['Date']
             Viewers = ratings_df[(ratings_df["Home Team"] == team)]['VIEWERS']
@@ -81,13 +83,18 @@ def update_figure(teamX, Radio_Selection):
                     y = Viewers,
                     name = team,
                     marker = dict(
-                        color = 'rgb(0,0,0)',
+                        color = col,
                         opacity = .6,
                         size = 7 ),
                     hovertext = ratings_df[(ratings_df["Home Team"] == team) | (ratings_df["Visitor Team"] == team)]["GAME"]
                     ) )
-    
-    fig = { 'data': data}
+    layout = dict(
+        title = 'TV Ratings by Team Over Time',
+        showlegend=True,
+        )
+    fig = { 'data': data,
+          'layout': layout
+          }
     
     return fig
 
