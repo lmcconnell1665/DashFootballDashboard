@@ -10,6 +10,7 @@ import datetime
 ratings_df = pd.read_csv("TV_Joined.csv")
 team_colors = pd.read_csv("team_colors.csv")
 team_colors = team_colors.set_index('Team').to_dict()
+
 # Makes the date column a column of dates
 ratings_df.Date = pd.to_datetime(ratings_df.Date)
 
@@ -38,12 +39,12 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 # Create the layout
 app.layout = html.Div([ #contains everything on page, necessary for styling like page background etc.
     
-    # page header section
+    # page header
     html.Div([
-        html.H1('College Football'), #Dashboard title
+        html.H1('College Football', style={"margin-top": "25px"}) #Dashboard title
     ]), 
     
-    #TV Viewers per team per year graph section
+    # option selector section
     html.Div([
         html.P([
                 'Choose a Team:', #Dropdown instructions 
@@ -55,21 +56,17 @@ app.layout = html.Div([ #contains everything on page, necessary for styling like
                     value = ['Tennessee'], 
                     style = { 'width':'400px', 'float':'right', 'display':'inline-block' } 
                 ), 
-                dcc.RadioItems( #Home, away, both selection button
+            
+                #Home, away, or both radio selection
+                dcc.RadioItems(
                     id = 'home-away',
                     options = [ { 'label':i, 'value':i } for i in ['Home', 'Away', 'Both'] ],
                     value = 'Home',
                     labelStyle = { 'display':'inline-block', 'marginTop':25 }
-                ), #closes RadioItem
-            ] #closes list of items in html.P
-            , style = { 'width':'600px', 'MarginTop':10, 'MarginLeft':5 }
-        ), #closes html.P
-        
-        html.P([
-            dcc.Graph(id = 'First_Graph') #TV attendance scatterplot
-        ]),
-        
-        html.P([
+                ),
+                
+                #Year range selector
+                'Choose a Year Range:',
                 dcc.RangeSlider(
                     id = 'Year_Selection_Slider',
                     min = ratings_df.Date.min().year,
@@ -77,18 +74,31 @@ app.layout = html.Div([ #contains everything on page, necessary for styling like
                     value = [ratings_df.Date.min().year, ratings_df.Date.max().year],
                     marks = { str(year): str(year) for year in ratings_df.Date.dt.year.unique() },
                     step = None
-                ),           
-            ],
-            style = { 'width':'49%', 'marginTop':10, 'marignLeft':10}
-        )
-     
-    ]) #closes TV Viewers per team per year graph section
+                )
+            ], #closes list of user selection items in html.P
+            style = { 'width':'600px', 'MarginTop':10, 'MarginLeft':5 }
+            ) #closes html.P
+    ]), #closes html.Div
     
-]) # closes app.layout and the Section containing everything
+    #Graph section
+    html.Div([  
+        #TV Viewers per team per year graph section
+        html.P([
+            dcc.Graph(id = 'First_Graph') #TV attendance scatterplot
+        ]),
+        
+        #Second graph
+        html.P([
+            dcc.Graph(id = 'Second_Graph') #Average stadium attendance year by year
+        ])
+     
+    ]) #closes the graph section
+]) #closes the layout section
 
 #=============================================================================
 # Create the callbacks here
 
+#First graph callback
 @app.callback(
     Output(component_id = 'First_Graph', component_property = 'figure'),
     [Input(component_id = 'First_Dropdown', component_property = 'value'),
@@ -96,7 +106,7 @@ app.layout = html.Div([ #contains everything on page, necessary for styling like
     Input(component_id = 'Year_Selection_Slider', component_property = 'value')]
 )
 
-def update_figure(teamX, Radio_Selection, Year_Selection):
+def update_figure1(teamX, Radio_Selection, Year_Selection):
 
     data = []
     for team in teamX:
@@ -136,7 +146,64 @@ def update_figure(teamX, Radio_Selection, Year_Selection):
                     hovertext = ratings_df[(ratings_df["Home Team"] == team) | (ratings_df["Visitor Team"] == team)]["GAME"]
                     ) )
     layout = dict(
-        title = 'TV Ratings by Team Over Time',
+        title = 'TV Viewers by Team Over Time',
+        showlegend=True,
+        )
+    fig = { 'data': data,
+          'layout': layout
+          }
+    
+    return fig
+
+#Second graph callback
+@app.callback(
+    Output(component_id = 'Second_Graph', component_property = 'figure'),
+    [Input(component_id = 'First_Dropdown', component_property = 'value'),
+    Input(component_id = 'home-away', component_property = 'value'),
+    Input(component_id = 'Year_Selection_Slider', component_property = 'value')]
+)
+
+def update_figure2(teamX, Radio_Selection, Year_Selection):
+
+    data = []
+    for team in teamX:
+        col = team_colors['Color'][team]
+        if Radio_Selection == 'Home':
+            Date = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
+                              (ratings_df['Date'].dt.year <= Year_Selection[1]) & 
+                              (ratings_df['Home Team'] == team)]['Date']
+            Viewers = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
+                                 (ratings_df['Date'].dt.year <= Year_Selection[1]) & 
+                                 (ratings_df['Home Team'] == team)]['score_home']
+        elif Radio_Selection == 'Away':
+            Date = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
+                              (ratings_df['Date'].dt.year <= Year_Selection[1]) &
+                              (ratings_df['Visitor Team'] == team)]['Date']
+            Viewers = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
+                                 (ratings_df['Date'].dt.year <= Year_Selection[1]) &
+                                 (ratings_df['Visitor Team'] == team)]['score_home']
+        elif Radio_Selection == 'Both':
+            Date = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) &
+                              (ratings_df['Date'].dt.year <= Year_Selection[1]) &
+                              ((ratings_df["Home Team"] == team) | (ratings_df["Visitor Team"] == team))]["Date"]
+            Viewers = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
+                                 (ratings_df['Date'].dt.year <= Year_Selection[1]) &
+                                 ((ratings_df["Home Team"] == team) | (ratings_df["Visitor Team"] == team))]["score_home"]         
+            
+        data.append( dict(
+                    type = "scatter",
+                    mode = "markers",
+                    x = Date,
+                    y = Viewers,
+                    name = team,
+                    marker = dict(
+                        color = col,
+                        opacity = .6,
+                        size = 7 ),
+                    hovertext = ratings_df[(ratings_df["Home Team"] == team) | (ratings_df["Visitor Team"] == team)]["GAME"]
+                    ) )
+    layout = dict(
+        title = 'TV Viewers by Total Game Score',
         showlegend=True,
         )
     fig = { 'data': data,
