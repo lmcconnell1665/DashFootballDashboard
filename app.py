@@ -160,6 +160,8 @@ def update_figure1(teamX, Radio_Selection, Year_Selection):
                     ) )
     layout = dict(
         title = 'TV Viewers by Team Over Time',
+        xaxis = {'title': 'Date'},
+        yaxis = {'title': 'Number of Viewers'},
         showlegend=True,
         )
     fig = { 'data': data,
@@ -217,6 +219,8 @@ def update_figure2(teamX, Radio_Selection, Year_Selection):
                     ) )
     layout = dict(
         title = 'TV Viewers by Total Home Team Score',
+        xaxis = {'title': 'Date'},
+        yaxis = {'title': 'Home Team Final Score'},
         showlegend=True,
         )
     fig = { 'data': data,
