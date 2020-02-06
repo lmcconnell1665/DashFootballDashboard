@@ -41,30 +41,33 @@ app.layout = html.Div([ #contains everything on page, necessary for styling like
     
     # page header
     html.Div([
-        html.H1('College Football', style={"margin-top": "25px"}) #Dashboard title
-    ]), 
+        html.Div([
+            html.H2('College Football TV Influence'), #Dashboard title
+        ], style={'width': '49%', 'display': 'inline-block', 'vertical-align': 'top'}), #closes title html.Div
+        
+        html.Div([
+            html.Img(
+                src = app.get_asset_url('NCAA_logo.png'),
+                id = 'logo',
+                style = {'height': 100, 'width': 'auto'}
+            ) #closes Html.Img
+        ], style={'width': '49%', 'display': 'inline-block', 'textAlign': 'right', 'margin-bottom': 10}) #closes logo html.Div
+    ]), #closes header html.Div
     
     # option selector section
     html.Div([
         html.P([
+                html.Div([
                 'Choose a Team:', #Dropdown instructions 
                 #Team selection dropdown
                 dcc.Dropdown(
                     id = 'First_Dropdown', 
                     options = teamNamesDict, 
                     multi = True, 
-                    value = ['Tennessee'], 
-                    style = { 'width':'400px', 'float':'right', 'display':'inline-block' } 
-                ), 
+                    value = ['Tennessee']
+                ) ], style={'width': '49%', 'display': 'inline-block', 'marginBottom': 20}), #closes html.Div
             
-                #Home, away, or both radio selection
-                dcc.RadioItems(
-                    id = 'home-away',
-                    options = [ { 'label':i, 'value':i } for i in ['Home', 'Away', 'Both'] ],
-                    value = 'Home',
-                    labelStyle = { 'display':'inline-block', 'marginTop':25 }
-                ),
-                
+                html.Div([
                 #Year range selector
                 'Choose a Year Range:',
                 dcc.RangeSlider(
@@ -74,23 +77,33 @@ app.layout = html.Div([ #contains everything on page, necessary for styling like
                     value = [ratings_df.Date.min().year, ratings_df.Date.max().year],
                     marks = { str(year): str(year) for year in ratings_df.Date.dt.year.unique() },
                     step = None
-                )
-            ], #closes list of user selection items in html.P
-            style = { 'width':'600px', 'MarginTop':10, 'MarginLeft':5 }
+                ) ], style={'width': '49%', 'display': 'inline-block'}), #closes html.Div
+            
+                html.Div([
+                'Select an Option Below:',
+                #Home, away, or both radio selection
+                dcc.RadioItems(
+                    id = 'home-away',
+                    options = [ { 'label':i, 'value':i } for i in ['Home', 'Away', 'Both'] ],
+                    value = 'Home',
+                    labelStyle = { 'display': 'inline-block'}
+                )], style={'width': '49%', 'display': 'inline-block'}) #closes html.Div
+
+            ] #closes list of user selection items in html.P
             ) #closes html.P
     ]), #closes html.Div
     
     #Graph section
     html.Div([  
         #TV Viewers per team per year graph section
-        html.P([
+        html.Div([
             dcc.Graph(id = 'First_Graph') #TV attendance scatterplot
-        ]),
+        ], style={'width': '49%', 'display': 'inline-block'}), #closes html.Div
         
         #Second graph
-        html.P([
+        html.Div([
             dcc.Graph(id = 'Second_Graph') #Average stadium attendance year by year
-        ])
+        ], style={'width': '49%', 'display': 'inline-block'}) #closes html.Div
      
     ]) #closes the graph section
 ]) #closes the layout section
@@ -203,7 +216,7 @@ def update_figure2(teamX, Radio_Selection, Year_Selection):
                     hovertext = ratings_df[(ratings_df["Home Team"] == team) | (ratings_df["Visitor Team"] == team)]["GAME"]
                     ) )
     layout = dict(
-        title = 'TV Viewers by Total Game Score',
+        title = 'TV Viewers by Total Home Team Score',
         showlegend=True,
         )
     fig = { 'data': data,
