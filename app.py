@@ -11,6 +11,8 @@ import plotly.graph_objects as go
 ratings_df = pd.read_csv("TV_Joined.csv")
 team_colors = pd.read_csv("team_colors.csv")
 team_colors = team_colors.set_index('Team').to_dict()
+logos = pd.read_csv("team_logos.csv")
+logos = logos.set_index("Team").to_dict()
 
 # Makes the date column a column of dates
 ratings_df.Date = pd.to_datetime(ratings_df.Date)
@@ -111,7 +113,16 @@ app.layout = html.Div([ #contains everything on page, necessary for styling like
             dcc.Graph(id = 'Second_Graph') #Annual Attn by year
         ], style={'width': '49%', 'display': 'inline-block'}) #closes html.Div
      
-    ]) #closes the graph section
+    ]), #closes the graph section
+    html.Div([
+        html.H3('Clike the logo for news on the last selected team:'),
+        html.Div([ 
+            html.A([
+                html.Img(id = 'teamLogo')
+            ], id = 'Links',
+            target = '_blank')
+        ])    
+        ])
 ]) #closes the layout section
 
 #=============================================================================
@@ -235,6 +246,17 @@ def update_figure2(teamX, Radio_Selection, Year_Selection):
     
     return fig
 
+@app.callback(
+    [Output(component_id = 'teamLogo', component_property = 'src'),
+    Output(component_id = 'Links', component_property = 'href')],
+    [Input(component_id = 'First_Dropdown', component_property = 'value')]
+)
+
+def update_links(teamX = ['Tennessee']):
+    href = logos['Link'][teamX[len(teamX)-1]]
+    logo = logos['Logo'][teamX[len(teamX)-1]]
+    
+    return  str(logo) , str(href)
 if __name__ == "__main__":
     app.run_server(debug=True)
     
