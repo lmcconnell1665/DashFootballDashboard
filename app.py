@@ -50,7 +50,7 @@ app.layout = html.Div([ #contains everything on page, necessary for styling like
     # page header
     html.Div([
         html.Div([
-            html.H2('College Football TV Influence'), #Dashboard title
+            html.H2('College Football Influence'), #Dashboard title
         ], style={'width': '49%', 'display': 'inline-block', 'vertical-align': 'top'}), #closes title html.Div
         
         html.Div([
@@ -102,43 +102,47 @@ app.layout = html.Div([ #contains everything on page, necessary for styling like
     ]), #closes html.Div
     
     dcc.Tabs([
-        dcc.Tab(label = "View 1", children = [
+        dcc.Tab(label = "Television Viewership Insights", children = [
             
             #Graph section
             html.Div([  
+                
                 #TV Viewers per team per year graph section
                 html.Div([
                     dcc.Graph(id = 'First_GraphA') #TV attendance scatterplot
                 ], style={'width': '49%', 'display': 'inline-block'}), #closes html.Div
         
-                #Second graph
+                #TV rating per team per year graph section
                 html.Div([
-                    dcc.Graph(id = 'Second_GraphA') #Annual Attn by year
+                    dcc.Graph(id = 'First_GraphB') #TV rating scatterplot
                 ], style={'width': '49%', 'display': 'inline-block'}) #closes html.Div
-     
-            ]) #closes the graph section
+                
+                ]) #closes the graph section
         ]), #closes View 1 tab
                 
-        dcc.Tab(label = "View 2", children = [
+        dcc.Tab(label = "Stadium Attendance Insights", children = [
             
             #Graph section
             html.Div([  
-                #Second graph
+                
+                #Stadium Attn by year
                 html.Div([
-                    dcc.Graph(id = 'Second_GraphB') #Annual Attn by year
+                    dcc.Graph(id = 'Second_GraphA')
                 ], style={'width': '49%', 'display': 'inline-block'}), #closes html.Div
                 
-                #TV Viewers per team per year graph section
+                #Stadium attn percentage
                 html.Div([
-                    dcc.Graph(id = 'First_GraphB') #TV attendance scatterplot
+                    dcc.Graph(id = 'Second_GraphB') 
                 ], style={'width': '49%', 'display': 'inline-block'}) #closes html.Div
-            ]) #closes the graph section
+
+                ]) #closes the graph section
+                
         ]) #closes View 2 tab
     ]), #closes the tabs section
             
     #Logo and link section
     html.Div([
-        html.H3('Clike the logo for news on the last selected team:'),
+        html.H3('Click the logo for news on the last selected team:'),
         html.Div([ 
             html.A([
                 html.Img(id = 'teamLogo')
@@ -227,29 +231,29 @@ def update_figure1(teamX, Radio_Selection, Year_Selection):
             Date = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
                               (ratings_df['Date'].dt.year <= Year_Selection[1]) & 
                               (ratings_df['Home Team'] == team)]['Date']
-            Viewers = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
+            Rating = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
                                  (ratings_df['Date'].dt.year <= Year_Selection[1]) & 
-                                 (ratings_df['Home Team'] == team)]['VIEWERS']
+                                 (ratings_df['Home Team'] == team)]['RATING']
         elif Radio_Selection == 'Away':
             Date = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
                               (ratings_df['Date'].dt.year <= Year_Selection[1]) &
                               (ratings_df['Visitor Team'] == team)]['Date']
-            Viewers = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
+            Rating = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
                                  (ratings_df['Date'].dt.year <= Year_Selection[1]) &
-                                 (ratings_df['Visitor Team'] == team)]['VIEWERS']
+                                 (ratings_df['Visitor Team'] == team)]['RATING']
         elif Radio_Selection == 'Both':
             Date = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) &
                               (ratings_df['Date'].dt.year <= Year_Selection[1]) &
                               ((ratings_df["Home Team"] == team) | (ratings_df["Visitor Team"] == team))]["Date"]
-            Viewers = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
+            Rating = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
                                  (ratings_df['Date'].dt.year <= Year_Selection[1]) &
-                                 ((ratings_df["Home Team"] == team) | (ratings_df["Visitor Team"] == team))]["VIEWERS"]         
+                                 ((ratings_df["Home Team"] == team) | (ratings_df["Visitor Team"] == team))]["RATING"]         
             
         data.append( dict(
                     type = "scatter",
                     mode = "markers",
                     x = Date,
-                    y = Viewers,
+                    y = Rating,
                     name = team,
                     marker = dict(
                         color = col,
@@ -258,9 +262,9 @@ def update_figure1(teamX, Radio_Selection, Year_Selection):
                     hovertext = ratings_df[(ratings_df["Home Team"] == team) | (ratings_df["Visitor Team"] == team)]["GAME"]
                     ) )
     layout = dict(
-        title = 'TV Viewers by Team Over Time',
+        title = 'TV Rating by Team Over Time',
         xaxis = {'title': 'Date'},
-        yaxis = {'title': 'Number of Viewers'},
+        yaxis = {'title': 'Rating'},
         showlegend=True,
         )
     fig = { 'data': data,
@@ -376,7 +380,7 @@ def update_figure3(teamX, Radio_Selection, Year_Selection):
                     hovertext = ratings_df[(ratings_df["Home Team"] == team) | (ratings_df["Visitor Team"] == team)]["GAME"]
                     ) )
     layout = dict(
-        title = 'Attendance Percentage of Stadium Capacity by Team',
+        title = 'Percentage of Stadium Capacity Filled Over Time',
         xaxis = {'title': 'Date'},
         yaxis = {'title': 'Percentage of Stadium Capacity'},
         showlegend=True,
