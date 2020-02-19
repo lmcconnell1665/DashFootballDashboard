@@ -336,49 +336,49 @@ def update_figure2(teamX, Radio_Selection, Year_Selection):
     Input(component_id = 'Year_Selection_Slider', component_property = 'value')]
 )
 
-def update_figure2(teamX, Radio_Selection, Year_Selection):
+def update_figure3(teamX, Radio_Selection, Year_Selection):
 
     data = []
     for team in teamX:
         col = team_colors['Color'][team]
         if Radio_Selection == 'Home':
-            Date = annual_attn[(annual_attn['Year'] >= Year_Selection[0]) & 
-                              (annual_attn['Year'] <= Year_Selection[1]) & 
-                              (annual_attn['Home Team'] == team)]['Year']
-            Attendance = annual_attn[(annual_attn['Year'] >= Year_Selection[0]) & 
-                                 (annual_attn['Year'] <= Year_Selection[1]) & 
-                                 (annual_attn['Home Team'] == team)]['attend']
+            Date = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
+                              (ratings_df['Date'].dt.year <= Year_Selection[1]) & 
+                              (ratings_df['Home Team'] == team)]['Date']
+            Viewers = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
+                                 (ratings_df['Date'].dt.year <= Year_Selection[1]) & 
+                                 (ratings_df['Home Team'] == team)]['attend_pct']
         elif Radio_Selection == 'Away':
-            Date = annual_attn[(annual_attn['Year'] >= Year_Selection[0]) & 
-                              (annual_attn['Year'] <= Year_Selection[1]) &
-                              (annual_attn['Visitor Team'] == team)]['Year']
-            Attendance = annual_attn[(annual_attn['Year'] >= Year_Selection[0]) & 
-                                 (annual_attn['Year'] <= Year_Selection[1]) &
-                                 (annual_attn['Visitor Team'] == team)]['attend']
+            Date = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
+                              (ratings_df['Date'].dt.year <= Year_Selection[1]) &
+                              (ratings_df['Visitor Team'] == team)]['Date']
+            Viewers = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
+                                 (ratings_df['Date'].dt.year <= Year_Selection[1]) &
+                                 (ratings_df['Visitor Team'] == team)]['attend_pct']
         elif Radio_Selection == 'Both':
-            Date = annual_attn[(annual_attn['Year'] >= Year_Selection[0]) &
-                              (annual_attn['Year'] <= Year_Selection[1]) &
-                              ((annual_attn["Home Team"] == team) | (annual_attn["Visitor Team"] == team))]["Year"]
-            Attendance = annual_attn[(annual_attn['Year'] >= Year_Selection[0]) & 
-                                 (annual_attn['Year'] <= Year_Selection[1]) &
-                                 ((annual_attn["Home Team"] == team) | (annual_attn["Visitor Team"] == team))]["attend"]         
+            Date = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) &
+                              (ratings_df['Date'].dt.year <= Year_Selection[1]) &
+                              ((ratings_df["Home Team"] == team) | (ratings_df["Visitor Team"] == team))]["Date"]
+            Viewers = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
+                                 (ratings_df['Date'].dt.year <= Year_Selection[1]) &
+                                 ((ratings_df["Home Team"] == team) | (ratings_df["Visitor Team"] == team))]["attend_pct"]         
             
         data.append( dict(
-                    type = "bar",
+                    type = "scatter",
                     mode = "markers",
                     x = Date,
-                    y = Attendance,
+                    y = Viewers,
                     name = team,
                     marker = dict(
                         color = col,
-                        opacity = .8,
-                        size = 7 )
-                    #hovertext = annual_attn[(annual_attn["Home Team"] == team) | (annual_attn["Visitor Team"] == team)]["GAME"]
+                        opacity = .6,
+                        size = 7 ),
+                    hovertext = ratings_df[(ratings_df["Home Team"] == team) | (ratings_df["Visitor Team"] == team)]["GAME"]
                     ) )
     layout = dict(
-        title = 'Stadium Attendance by Team Over Time',
-        xaxis = {'title': 'Year'},
-        yaxis = {'title': 'Stadium Attendance'},
+        title = 'Attendance Percentage of Stadium Capacity by Team',
+        xaxis = {'title': 'Date'},
+        yaxis = {'title': 'Percentage of Stadium Capacity'},
         showlegend=True,
         )
     fig = { 'data': data,
