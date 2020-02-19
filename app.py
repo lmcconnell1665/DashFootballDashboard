@@ -101,19 +101,42 @@ app.layout = html.Div([ #contains everything on page, necessary for styling like
             ) #closes html.P
     ]), #closes html.Div
     
-    #Graph section
-    html.Div([  
-        #TV Viewers per team per year graph section
-        html.Div([
-            dcc.Graph(id = 'First_Graph') #TV attendance scatterplot
-        ], style={'width': '49%', 'display': 'inline-block'}), #closes html.Div
+    dcc.Tabs([
+        dcc.Tab(label = "View 1", children = [
+            
+            #Graph section
+            html.Div([  
+                #TV Viewers per team per year graph section
+                html.Div([
+                    dcc.Graph(id = 'First_GraphA') #TV attendance scatterplot
+                ], style={'width': '49%', 'display': 'inline-block'}), #closes html.Div
         
-        #Second graph
-        html.Div([
-            dcc.Graph(id = 'Second_Graph') #Annual Attn by year
-        ], style={'width': '49%', 'display': 'inline-block'}) #closes html.Div
+                #Second graph
+                html.Div([
+                    dcc.Graph(id = 'Second_GraphA') #Annual Attn by year
+                ], style={'width': '49%', 'display': 'inline-block'}) #closes html.Div
      
-    ]), #closes the graph section
+            ]) #closes the graph section
+        ]), #closes View 1 tab
+                
+        dcc.Tab(label = "View 2", children = [
+            
+            #Graph section
+            html.Div([  
+                #Second graph
+                html.Div([
+                    dcc.Graph(id = 'Second_GraphB') #Annual Attn by year
+                ], style={'width': '49%', 'display': 'inline-block'}), #closes html.Div
+                
+                #TV Viewers per team per year graph section
+                html.Div([
+                    dcc.Graph(id = 'First_GraphB') #TV attendance scatterplot
+                ], style={'width': '49%', 'display': 'inline-block'}) #closes html.Div
+            ]) #closes the graph section
+        ]) #closes View 2 tab
+    ]), #closes the tabs section
+            
+    #Logo and link section
     html.Div([
         html.H3('Clike the logo for news on the last selected team:'),
         html.Div([ 
@@ -128,9 +151,9 @@ app.layout = html.Div([ #contains everything on page, necessary for styling like
 #=============================================================================
 # Create the callbacks here
 
-#First graph callback
+#First graph callback - A
 @app.callback(
-    Output(component_id = 'First_Graph', component_property = 'figure'),
+    Output(component_id = 'First_GraphA', component_property = 'figure'),
     [Input(component_id = 'First_Dropdown', component_property = 'value'),
     Input(component_id = 'home-away', component_property = 'value'),
     Input(component_id = 'Year_Selection_Slider', component_property = 'value')]
@@ -187,9 +210,68 @@ def update_figure1(teamX, Radio_Selection, Year_Selection):
     
     return fig
 
-#Second graph callback
+#First graph callback - B
 @app.callback(
-    Output(component_id = 'Second_Graph', component_property = 'figure'),
+    Output(component_id = 'First_GraphB', component_property = 'figure'),
+    [Input(component_id = 'First_Dropdown', component_property = 'value'),
+    Input(component_id = 'home-away', component_property = 'value'),
+    Input(component_id = 'Year_Selection_Slider', component_property = 'value')]
+)
+
+def update_figure1(teamX, Radio_Selection, Year_Selection):
+
+    data = []
+    for team in teamX:
+        col = team_colors['Color'][team]
+        if Radio_Selection == 'Home':
+            Date = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
+                              (ratings_df['Date'].dt.year <= Year_Selection[1]) & 
+                              (ratings_df['Home Team'] == team)]['Date']
+            Viewers = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
+                                 (ratings_df['Date'].dt.year <= Year_Selection[1]) & 
+                                 (ratings_df['Home Team'] == team)]['VIEWERS']
+        elif Radio_Selection == 'Away':
+            Date = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
+                              (ratings_df['Date'].dt.year <= Year_Selection[1]) &
+                              (ratings_df['Visitor Team'] == team)]['Date']
+            Viewers = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
+                                 (ratings_df['Date'].dt.year <= Year_Selection[1]) &
+                                 (ratings_df['Visitor Team'] == team)]['VIEWERS']
+        elif Radio_Selection == 'Both':
+            Date = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) &
+                              (ratings_df['Date'].dt.year <= Year_Selection[1]) &
+                              ((ratings_df["Home Team"] == team) | (ratings_df["Visitor Team"] == team))]["Date"]
+            Viewers = ratings_df[(ratings_df['Date'].dt.year >= Year_Selection[0]) & 
+                                 (ratings_df['Date'].dt.year <= Year_Selection[1]) &
+                                 ((ratings_df["Home Team"] == team) | (ratings_df["Visitor Team"] == team))]["VIEWERS"]         
+            
+        data.append( dict(
+                    type = "scatter",
+                    mode = "markers",
+                    x = Date,
+                    y = Viewers,
+                    name = team,
+                    marker = dict(
+                        color = col,
+                        opacity = .6,
+                        size = 7 ),
+                    hovertext = ratings_df[(ratings_df["Home Team"] == team) | (ratings_df["Visitor Team"] == team)]["GAME"]
+                    ) )
+    layout = dict(
+        title = 'TV Viewers by Team Over Time',
+        xaxis = {'title': 'Date'},
+        yaxis = {'title': 'Number of Viewers'},
+        showlegend=True,
+        )
+    fig = { 'data': data,
+          'layout': layout
+          }
+    
+    return fig
+
+#Second graph callback - A
+@app.callback(
+    Output(component_id = 'Second_GraphA', component_property = 'figure'),
     [Input(component_id = 'First_Dropdown', component_property = 'value'),
     Input(component_id = 'home-away', component_property = 'value'),
     Input(component_id = 'Year_Selection_Slider', component_property = 'value')]
@@ -246,6 +328,66 @@ def update_figure2(teamX, Radio_Selection, Year_Selection):
     
     return fig
 
+#Second graph callback - B
+@app.callback(
+    Output(component_id = 'Second_GraphB', component_property = 'figure'),
+    [Input(component_id = 'First_Dropdown', component_property = 'value'),
+    Input(component_id = 'home-away', component_property = 'value'),
+    Input(component_id = 'Year_Selection_Slider', component_property = 'value')]
+)
+
+def update_figure2(teamX, Radio_Selection, Year_Selection):
+
+    data = []
+    for team in teamX:
+        col = team_colors['Color'][team]
+        if Radio_Selection == 'Home':
+            Date = annual_attn[(annual_attn['Year'] >= Year_Selection[0]) & 
+                              (annual_attn['Year'] <= Year_Selection[1]) & 
+                              (annual_attn['Home Team'] == team)]['Year']
+            Attendance = annual_attn[(annual_attn['Year'] >= Year_Selection[0]) & 
+                                 (annual_attn['Year'] <= Year_Selection[1]) & 
+                                 (annual_attn['Home Team'] == team)]['attend']
+        elif Radio_Selection == 'Away':
+            Date = annual_attn[(annual_attn['Year'] >= Year_Selection[0]) & 
+                              (annual_attn['Year'] <= Year_Selection[1]) &
+                              (annual_attn['Visitor Team'] == team)]['Year']
+            Attendance = annual_attn[(annual_attn['Year'] >= Year_Selection[0]) & 
+                                 (annual_attn['Year'] <= Year_Selection[1]) &
+                                 (annual_attn['Visitor Team'] == team)]['attend']
+        elif Radio_Selection == 'Both':
+            Date = annual_attn[(annual_attn['Year'] >= Year_Selection[0]) &
+                              (annual_attn['Year'] <= Year_Selection[1]) &
+                              ((annual_attn["Home Team"] == team) | (annual_attn["Visitor Team"] == team))]["Year"]
+            Attendance = annual_attn[(annual_attn['Year'] >= Year_Selection[0]) & 
+                                 (annual_attn['Year'] <= Year_Selection[1]) &
+                                 ((annual_attn["Home Team"] == team) | (annual_attn["Visitor Team"] == team))]["attend"]         
+            
+        data.append( dict(
+                    type = "bar",
+                    mode = "markers",
+                    x = Date,
+                    y = Attendance,
+                    name = team,
+                    marker = dict(
+                        color = col,
+                        opacity = .8,
+                        size = 7 )
+                    #hovertext = annual_attn[(annual_attn["Home Team"] == team) | (annual_attn["Visitor Team"] == team)]["GAME"]
+                    ) )
+    layout = dict(
+        title = 'Stadium Attendance by Team Over Time',
+        xaxis = {'title': 'Year'},
+        yaxis = {'title': 'Stadium Attendance'},
+        showlegend=True,
+        )
+    fig = { 'data': data,
+          'layout': layout
+          }
+    
+    return fig
+
+#Team logo and link callback
 @app.callback(
     [Output(component_id = 'teamLogo', component_property = 'src'),
     Output(component_id = 'Links', component_property = 'href')],
@@ -257,6 +399,7 @@ def update_links(teamX = ['Tennessee']):
     logo = logos['Logo'][teamX[len(teamX)-1]]
     
     return  str(logo) , str(href)
+
 if __name__ == "__main__":
     app.run_server(debug=True)
     
