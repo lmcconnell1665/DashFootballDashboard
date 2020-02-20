@@ -198,8 +198,8 @@ def update_figure1(teamX, Radio_Selection, Year_Selection):
                     name = team,
                     marker = dict(
                         color = col,
-                        opacity = .6,
-                        size = 7 ),
+                        opacity = .5,
+                        size = 8 ),
                     hovertext = ratings_df[(ratings_df["Home Team"] == team) | (ratings_df["Visitor Team"] == team)]["GAME"]
                     ) )
     layout = dict(
@@ -257,8 +257,8 @@ def update_figure1(teamX, Radio_Selection, Year_Selection):
                     name = team,
                     marker = dict(
                         color = col,
-                        opacity = .6,
-                        size = 7 ),
+                        opacity = .5,
+                        size = 8 ),
                     hovertext = ratings_df[(ratings_df["Home Team"] == team) | (ratings_df["Visitor Team"] == team)]["GAME"]
                     ) )
     layout = dict(
@@ -375,8 +375,8 @@ def update_figure3(teamX, Radio_Selection, Year_Selection):
                     name = team,
                     marker = dict(
                         color = col,
-                        opacity = .6,
-                        size = 7 ),
+                        opacity = .5,
+                        size = 8 ),
                     hovertext = ratings_df[(ratings_df["Home Team"] == team) | (ratings_df["Visitor Team"] == team)]["GAME"]
                     ) )
     layout = dict(
