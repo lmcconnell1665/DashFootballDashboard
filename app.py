@@ -1,3 +1,4 @@
+## 1.MODULE LOADING
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -7,6 +8,7 @@ import numpy as np
 import datetime
 import plotly.graph_objects as go
 
+## 2.DATA MANIPULATION
 # reading in data.frame
 ratings_df = pd.read_csv("TV_Joined.csv")
 team_colors = pd.read_csv("team_colors.csv")
@@ -41,6 +43,7 @@ teamNamesDict = [{'label' : tn, 'value': tn} for tn in teamNames]
 #Adding external stylesheet
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
+## 3.APPLICATION CREATION
 # Create the app
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
@@ -222,7 +225,7 @@ def update_figure1(teamX, Radio_Selection, Year_Selection):
     Input(component_id = 'Year_Selection_Slider', component_property = 'value')]
 )
 
-def update_figure1(teamX, Radio_Selection, Year_Selection):
+def update_figure2(teamX, Radio_Selection, Year_Selection):
 
     data = []
     for team in teamX:
@@ -281,7 +284,7 @@ def update_figure1(teamX, Radio_Selection, Year_Selection):
     Input(component_id = 'Year_Selection_Slider', component_property = 'value')]
 )
 
-def update_figure2(teamX, Radio_Selection, Year_Selection):
+def update_figure3(teamX, Radio_Selection, Year_Selection):
 
     data = []
     for team in teamX:
@@ -340,7 +343,7 @@ def update_figure2(teamX, Radio_Selection, Year_Selection):
     Input(component_id = 'Year_Selection_Slider', component_property = 'value')]
 )
 
-def update_figure3(teamX, Radio_Selection, Year_Selection):
+def update_figure4(teamX, Radio_Selection, Year_Selection):
 
     data = []
     for team in teamX:
@@ -399,8 +402,12 @@ def update_figure3(teamX, Radio_Selection, Year_Selection):
 )
 
 def update_links(teamX = ['Tennessee']):
-    href = logos['Link'][teamX[len(teamX)-1]]
-    logo = logos['Logo'][teamX[len(teamX)-1]]
+    if (len(teamX)!=0):
+        href = logos['Link'][teamX[len(teamX)-1]]
+        logo = logos['Logo'][teamX[len(teamX)-1]]
+    else:
+        href = 0
+        logo = 0
     
     return  str(logo) , str(href)
 
